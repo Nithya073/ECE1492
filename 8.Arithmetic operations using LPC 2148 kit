@@ -1,0 +1,29 @@
+#include <lpc214x.h>  // Header file for LPC2148
+
+void delay_ms(unsigned int ms) {
+    // Simple delay function (can be used for debugging or delays between operations)
+    unsigned int i, j;
+    for (i = 0; i < ms; i++)
+        for (j = 0; j < 2000; j++); // Adjust loop count for required delay
+}
+
+int main() {
+    unsigned int num1 = 10, num2 = 5;  // Example numbers for operations
+    unsigned int sum, diff, prod;
+    float div;
+
+    // Initialize operations
+    sum = num1 + num2;         // Addition
+    diff = num1 - num2;        // Subtraction
+    prod = num1 * num2;        // Multiplication
+    div = (float)num1 / num2;  // Division (typecasting for float result)
+
+    // Placeholder for operations like displaying results on LCD or UART
+    // Use UART or LEDs to display results for practical implementation
+    while (1) {
+        // Example of using results
+        // You can add UART print statements to send results to the console.
+        delay_ms(1000);  // Delay for 1 second
+    }
+    return 0;
+}
