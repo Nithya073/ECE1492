@@ -1,0 +1,60 @@
+#include <lpc214x.h>  // Include header file for LPC2148
+
+#define PCLK 15000000  // Peripheral clock frequency (15 MHz)
+
+// Function to configure UART0
+void UART0_Init(unsigned int baudrate) {
+    unsigned int divisor;
+
+    // Enable UART0 pins (P0.0 for TXD0, P0.1 for RXD0)
+    PINSEL0 |= 0x00000005;  
+
+    // Set baud rate
+    divisor = PCLK / (16 * baudrate);
+    U0LCR = 0x83;              // Enable DLAB (Divisor Latch Access Bit)
+    U0DLM = divisor >> 8;      // Set high divisor byte
+    U0DLL = divisor & 0xFF;    // Set low divisor byte
+    U0LCR = 0x03;              // Disable DLAB, 8-bit data, no parity, 1 stop bit
+
+    U0FCR = 0x07;              // Enable FIFO and reset RX/TX FIFOs
+}
+
+// Function to send a single character
+void UART0_SendChar(char ch) {
+    while (!(U0LSR & 0x20));  // Wait until THR (Transmit Holding Register) is empty
+    U0THR = ch;               // Load the character into the THR
+}
+
+// Function to send a string
+void UART0_SendString(const char *str) {
+    while (*str) {
+        UART0_SendChar(*str++);
+    }
+}
+
+// Function to receive a single character
+char UART0_ReceiveChar() {
+    while (!(U0LSR & 0x01));  // Wait until RBR (Receive Buffer Register) has data
+    return U0RBR;             // Return the received character
+}
+
+// Main function
+int main() {
+    char receivedChar;
+
+    UART0_Init(9600);  // Initialize UART0 with 9600 baud rate
+
+    UART0_SendString("UART0 Initialized. Enter a character:\r\n");
+
+    while (1) {
+        // Receive a character
+        receivedChar = UART0_ReceiveChar();
+
+        // Echo the received character back
+        UART0_SendString("You entered: ");
+        UART0_SendChar(receivedChar);
+        UART0_SendString("\r\n");
+    }
+
+    return 0;
+}
