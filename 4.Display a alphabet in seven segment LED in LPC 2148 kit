@@ -1,0 +1,66 @@
+#include <LPC214X.H>
+
+#define DS3   (1 << 13)  // P0.13 - Display Select 3
+#define DS4   (1 << 12)  // P0.12 - Display Select 4
+#define SEG_CODE (0xFF << 16)  // P0.16 to P0.23 - 7-segment control
+
+// Segment data for displaying the characters 'S', 'A', 'V', 'E', 'E', 'T', 'H', 'A'
+unsigned char const seg_dat[] = {
+    0x6D,  // S
+    0x76,  // A
+    0x37,  // V
+    0x79,  // E
+    0x79,  // E
+    0x74,  // T
+    0x76,  // H
+    0x76   // A
+};
+
+void delayms(int n) {
+    int i, j;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < 5035; j++) { // Adjust based on the microcontroller clock (60 MHz)
+            // Empty loop to create a delay
+        }
+    }
+}
+
+int main(void) {
+    unsigned char count;  // Variable to hold the current character index
+
+    // Configure the GPIO pins for 7-segment display
+    PINSEL0 = 0;           // Set Port0 pins as General Purpose I/O (GPIO) for 0-15
+    PINSEL1 = 0;           // Set Port0 pins as General Purpose I/O (GPIO) for 16-31
+
+    // Configure the Direction for Port0 (P0.16 to P0.23 for segments, P0.12, P0.13 for display selects)
+    IODIR0 = SEG_CODE | DS3 | DS4;
+
+    // Initially disable both displays
+    IOSET0 = SEG_CODE | DS3;  // Disable DS3
+    IOCLR0 = DS4;             // Enable DS4
+
+    count = 0;  // Start with character 'S'
+
+    // Main loop to display "SAVEETHA" on the 7-segment displays
+    while (1) {
+        // Display the current character on the 7-segment displays
+        IOCLR0 = SEG_CODE;  // Clear previous segment data
+        IOSET0 = seg_dat[count] << 16;  // Set the current character for DS4
+
+        delayms(1000);  // 1-second delay to keep the display steady
+
+        // Increment the count to show the next character in "SAVEETHA"
+        count++;
+        if (count > 7) {
+            count = 0;  // Reset to 0 after displaying "A"
+        }
+
+        // Switch display (multiplexing DS3 and DS4)
+        IOCLR0 = DS4;  // Disable DS4
+        IOSET0 = DS3;  // Enable DS3
+        delayms(500);  // Shorter delay for DS3 to give it time to display
+
+        IOCLR0 = DS3;  // Disable DS3
+        IOSET0 = DS4;  // Enable DS4
+    }
+}
