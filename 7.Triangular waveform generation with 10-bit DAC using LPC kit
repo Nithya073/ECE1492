@@ -1,39 +1,71 @@
-#include <lpc214x.h>
+#include "lpc214x.h"  
 
-void delay(unsigned int count);      // Function for generating a delay
+// PLL Register Values
+#define MSEL 4        // M-1 since M=5
+#define PSEL (1 << 5) // P-1 since P=2
+#define AOUT (1 << 19) // PINSEL1 value for AOUT config.
 
-void generate_triangle_wave(void);   // Function to generate triangular waveform
-
-int main(void) {
-    // Initialize DAC on P0.25
-    PINSEL1 |= (1 << 19);   // Configure P0.25 as DAC output
-
-    while (1) {
-        generate_triangle_wave();    // Generate triangular wave
-        delay(50000);                // Small delay between waveform switching
+// Delay function (creates delay in milliseconds)
+void delayms(int n) {
+    int i, j;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < 5035; j++) { // 5035 for 60MHz, 1007 for 12MHz
+            ;
+        }
     }
 }
 
-void delay(unsigned int count) {
-    unsigned int i, j;
-    for (i = 0; i < count; i++) {
-        for (j = 0; j < 6000; j++);  // Approximate delay
-    }
+/* Function to Set PLL0 so CPU Clock = 60MHz, PCLK = 15MHz */
+void clock_select(void) {
+    // Fosc = 12MHz
+    // Select CCLK = 60MHz & Fcco = 240MHz
+    PLL0CFG = PSEL | MSEL;
+
+    // PLL Feed Sequence
+    PLL0FEED = 0xAA;
+    PLL0FEED = 0x55;
+
+    // Enable PLL0
+    PLL0CON = 3;
+
+    // PLL Feed Sequence
+    PLL0FEED = 0xAA;
+    PLL0FEED = 0x55;
+
+    // Set VPBDIV for PCLK = CCLK / 4, so PCLK = 15MHz
+    VPBDIV = 0;
 }
 
-// Function to generate triangular waveform using DAC
+/* Function to Generate a Triangle Wave using the DAC */
 void generate_triangle_wave(void) {
     unsigned int i;
 
     // Incrementing part of the triangle
     for (i = 0; i < 1023; i++) {
-        DACR = (i << 6);  // Write to DAC (10-bit left justified)
-        delay(100);       // Delay to control waveform frequency
+        DACR = (i << 6); // Write to DAC (10-bit left justified)
+        delayms(1);      // Delay to control waveform frequency
     }
 
     // Decrementing part of the triangle
     for (i = 1023; i > 0; i--) {
-        DACR = (i << 6);  // Write to DAC
-        delay(100);       // Delay to control waveform frequency
+        DACR = (i << 6); // Write to DAC
+        delayms(1);      // Delay to control waveform frequency
     }
+}
+
+int main(void) {
+    // CPU Clock Configuration
+    clock_select();
+
+    // Configure Port0.0 to P0.15 as General Purpose IO
+    PINSEL0 = 0;
+
+    // Configure Port0.25 as Analog Output PIN
+    PINSEL1 = AOUT;
+
+    while (1) {
+        generate_triangle_wave(); // Generate the triangle wave continuously
+    }
+
+    return 0;
 }
