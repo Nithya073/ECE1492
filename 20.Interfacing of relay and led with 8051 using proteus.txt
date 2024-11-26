@@ -1,0 +1,25 @@
+ORG 0000H         ; Start of program
+; Initialize Port 1 as output port for relay control
+MOV P1, #00H      ; Clear Port 1 (all pins low initially)
+MAIN_LOOP:
+    SETB P1.0     ; Set P1.0 HIGH (Relay ON, LED ON)
+    ACALL DELAY   ; Call delay to keep the LED ON for some time
+    CLR P1.0      ; Clear P1.0 (Relay OFF, LED OFF)
+    ACALL DELAY   ; Call delay to keep the LED OFF for some time
+    SJMP MAIN_LOOP; Repeat the process
+
+; Delay subroutine for blinking speed
+DELAY:
+    MOV R1, #255  ; Outer loop
+DELAY1:
+    MOV R2, #255  ; Inner loop
+DELAY2:
+    DJNZ R2, DELAY2 ; Decrement inner loop
+    DJNZ R1, DELAY1 ; Decrement outer loop
+    RET           ; Return to main loop
+END               ; End of program
+
+
+
+
+

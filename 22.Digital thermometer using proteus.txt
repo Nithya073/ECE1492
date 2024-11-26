@@ -1,0 +1,30 @@
+ORG 00H               ; Start program at address 0x00
+MAIN:  MOV P2, #0F0H  ; Initialize Port 2 as output (upper nibble)
+              ACALL COUNTERCLOCKWISE ; Rotate stepper motor in counterclockwise direction
+       ACALL DELAY     ; Call delay
+       SJMP MAIN      ; Repeat forever
+; Subroutine to rotate stepper motor counterclockwise
+COUNTERCLOCKWISE:
+       MOV A, #08H    ; Load step 4 (1000)
+       MOV P2, A
+       ACALL DELAY
+       MOV A, #04H    ; Load step 3 (0100)
+       MOV P2, A
+       ACALL DELAY
+       MOV A, #02H    ; Load step 2 (0010)
+       MOV P2, A
+       ACALL DELAY
+       MOV A, #01H    ; Load step 1 (0001)
+       MOV P2, A
+       ACALL DELAY
+       RET            ; Return from subroutine
+; Subroutine to generate a delay
+DELAY:
+       MOV R1, #0FFH  ; Load delay counter (outer loop)
+DELAY_LOOP1:
+       MOV R2, #0FFH  ; Load delay counter (inner loop)
+DELAY_LOOP2:
+       DJNZ R2, DELAY_LOOP2 ; Decrement inner loop counter
+       DJNZ R1, DELAY_LOOP1 ; Decrement outer loop counter
+       RET            ; Return from subroutine
+END

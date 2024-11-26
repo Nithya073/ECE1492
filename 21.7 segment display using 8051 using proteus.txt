@@ -1,0 +1,56 @@
+ORG 0H           ; Origin (start address) for the code
+
+MOV P1, #0FFH    ; Initialize Port 1 to high (disable segments initially)
+MOV DPTR, #SEG_TABLE ; Load address of the segment table into the data pointer (DPTR)
+
+START:
+    MOV R0, #00H  ; Start with the digit 0
+    CALL DISPLAY_DIGIT ; Display the current digit
+    INC R0         ; Increment the digit (0-9)
+    MOV A, R0      ; Move the value of R0 to A register
+    ANL A, #0AH    ; Mask out higher bits (only consider digits 0-9)
+    MOV R0, A      ; Update R0 with the new value
+    ACALL DELAY    ; Call delay function to create a visible pause
+    SJMP START     ; Infinite loop to repeat the display
+
+; Display digit on the 7-segment display
+DISPLAY_DIGIT:
+    MOV A, R0      ; Move the current digit to the accumulator
+    MOVC A, @A+SEG_TABLE  ; Get the corresponding segment pattern
+    MOV P1, A      ; Output the segment pattern to Port 1
+    RET
+
+; 7-segment display code for digits 0-9
+SEG_TABLE:
+    DB 0xC0        ; 0
+    DB 0xF9        ; 1
+    DB 0xA4        ; 2
+    DB 0xB0        ; 3
+    DB 0x99        ; 4
+    DB 0x92        ; 5
+    DB 0x82        ; 6
+    DB 0xF8        ; 7
+    DB 0x80        ; 8
+    DB 0x90        ; 9
+
+; Delay function to create a visible pause
+DELAY:
+    MOV R2, #255   ; Load R2 with 255
+DELAY_LOOP1:
+    MOV R3, #255   ; Load R3 with 255
+DELAY_LOOP2:
+    NOP             ; No operation (waste time)
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    DJNZ R3, DELAY_LOOP2  ; Decrement R3 and jump if not zero
+    DJNZ R2, DELAY_LOOP1  ; Decrement R2 and jump if not zero
+    RET
+
+END
