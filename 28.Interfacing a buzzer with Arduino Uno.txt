@@ -1,0 +1,19 @@
+#define BUZZER_PIN 8
+
+void setup() {
+  pinMode(BUZZER_PIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(BUZZER_PIN, HIGH); // Turn buzzer on
+  delay(1000);                   // Wait for 1 second
+  digitalWrite(BUZZER_PIN, LOW); // Turn buzzer off
+  delay(1000);                   // Wait for 1 second
+}
+
+
+
+Circuit Diagram:
+Connect the buzzer:
+Positive pin → Digital Pin 8
+Negative pin → GND.
